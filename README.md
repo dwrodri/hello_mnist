@@ -28,5 +28,11 @@ For people breaking into the ML/Deep Learning scene with a strong C++ background
 Neilsen's Python code. 
 
 On top of that, this neural network could easily be re-purposed for another dataset or to solve another problem. If 
-you really like my code for whatever reason, you could also hypothetically use this as the basis for building some more 
-state-of-the-art stuff. 
+you really like my code for whatever reason, you could also hypothetically use this as the basis for building some 
+fancier  stuff. 
+
+## How the testing works (WIP)
+
+One of the quirky parts of this neural net is its testing methodology. I have a test setup where I attempt to classify 
+vectors whose magnitude is greater than one. This simple methodology allows for pretty rigorous testing that's a little 
+simpler than OCR, making it easier to track errors in convergence, floating point arithmetic, etc. 

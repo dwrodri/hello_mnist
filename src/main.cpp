@@ -7,26 +7,29 @@
  * Last edited by:
  */
 
-void generateToyDataset(std::vector<std::vector<double>> &data, std::vector<std::vector<double>> &labels){
+void generateToyDataset(const std::vector<std::vector<double>> &container, std::vector<std::vector<double>> &labels){
     std::random_device rd;
     std::mt19937 mt(rd());
     std::uniform_real_distribution<double> dist(-1.0, 1.0); //feel free to change distribution and range
 
+    std::cout << "Inside Thread:\t" << std::this_thread::get_id() << "\n"; //DEBUG
 
-
-    for (auto &&datum : data) { //generate vectors
-        for (int i = 0; i < data.size(); ++i) {
-            datum[i] = dist(mt);
+    auto & threadSpecificContainer = const_cast<std::vector<std::vector<double>> &>(container);
+    for (auto &vector: threadSpecificContainer){
+        for(auto &component : vector){
+            static_cast<double>(dist(mt));
         }
     }
 
-    for (int j = 0; j < data.size(); ++j) { //for every vector, if magnitude is longer than 1, label is 1
+    for (int j = 0; j < container.size(); ++j) { //for every vector, if magnitude is longer than 1, label is 1
         int sqSum = 0;
-        for (auto &&component : data[j]) { //I'm sorry everything is @!#%? dynamic
+        for (auto &&component : container[j]) { //I'm sorry everything is @!#%? dynamic
             sqSum += component*component;
         }
         labels[j][0] = sqSum > 1 ? 1 : 0; //no need for sqrt because 1^2 == 1
     }
+
+
 
 }
 
@@ -74,15 +77,38 @@ void runHelloNetTests(int trainingSetSize) { //train simple neural net to separa
               << perThreadDataPointContainers.size() << '\t'
               << perThreadLabelContainers.size() << std::endl;
 
+    //now we get the party started
     for (int j = 0; j < numCores; ++j) {
-        threadPool[j] = std::thread(generateToyDataset, std::ref(perThreadDataPointContainers[j]), std::ref(perThreadLabelContainers[j]));
+        threadPool.emplace_back(generateToyDataset, std::ref(perThreadDataPointContainers[j]), std::ref(perThreadLabelContainers[j]));
     }
+
+
+    for(auto &threadContainer : perThreadDataPointContainers){
+        std::cout << "This thread generated the following vectors:\t";
+        for(auto & vector : threadContainer){
+            std::cout << "<";
+            for(auto &component : vector){
+                std::cout << component << ", ";
+            }
+            std::cout << ">\t";
+        }
+        std::cout << std::endl;
+    }
+    for(auto &th : threadPool){
+        std::this_thread::sleep_for(std::chrono::nanoseconds(1000));
+        if(th.joinable()){
+            th.join();
+        }
+    }
+
+
 
 
 
 
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
+    char * pEnd;
     runHelloNetTests(atoi(argv[1]));
 }
