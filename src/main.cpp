@@ -22,7 +22,7 @@ void threadDataCallBack(float* const & arr,
 
 }
 
-//thread-specific takes linear array of components and creates labels for unit vs. non-unit
+//thread-specific function takes linear array of components and creates labels for unit vs. non-unit
 void threadLabelCallBack(float* const & dataArr,
                          float* const & labelArr,
                          unsigned long long const & dataRange,
@@ -46,7 +46,7 @@ void testConstructorAndForwardProp(){
     //construct network
     std::cout << "Creating NN with spec: [5,4,3,2,1]" << std::endl;
     std::vector<unsigned long> config = {5, 4, 3, 2, 1}; //two inputs, two hidden, and one output for testing
-    auto *test = new HelloNet(config, 0.5, 0);
+    auto *test = new HelloNet(config);
     std::cout << "Here are the weight tables:" << std::endl;
     test->dumpWeightTables(); //dump weight matrix for debugging
 

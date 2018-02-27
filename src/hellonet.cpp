@@ -8,7 +8,7 @@
 HelloNet::HelloNet(std::vector<unsigned long> layer_config): num_layers(layer_config.size()){
     std::random_device rd; //apparently rand() sucks balls, so here's a Mersenne twister
     std::mt19937 mt(rd());
-    std::uniform_real_distribution<float> dist(0.0, 1.0);
+    std::uniform_real_distribution<float> dist(-1.0, 1.0);
     //instantiate weight tables
     weights.resize(num_layers-1); // one table per layer
     for (int i = 1; i < num_layers; ++i) {
@@ -22,7 +22,7 @@ HelloNet::HelloNet(std::vector<unsigned long> layer_config): num_layers(layer_co
     for (auto &&layer : weights) {
         for (auto &&destination : layer) {
             for (auto &&sourceWeight : destination) {
-                dist(mt);
+                sourceWeight = dist(mt);
             }
         }
     }
@@ -36,7 +36,7 @@ HelloNet::HelloNet(std::vector<unsigned long> layer_config): num_layers(layer_co
     //fill bias vectors with randomness
     for (auto &&layer : biases) {
         for (auto &&neuron_bias : layer) {
-            dist(mt);
+           neuron_bias = dist(mt);
         }
     }
 }
@@ -172,5 +172,10 @@ void HelloNet::sgd(int epochs,
                    float learn_rate,
                    std::vector<std::vector<float>> &training_data,
                    std::vector<float> &labels) {
+    //break training data into epochs randomly
+
+    //backprop through each epoch scaled by learn rate
+
+    //maybe convergence test?
 
 }
