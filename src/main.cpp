@@ -54,7 +54,7 @@ void testConstructorAndForwardProp(){
     //forward propagation test
     std::cout << "propagating through = < 1, 1, 1, 1, 1 >" << std::endl;
     std::vector<float> sample = {1, 1, 1, 1, 1}; //dummy data
-    test->parse(sample);
+    test->forwardProp(sample);
     std::string fPropOutput = "<";
     for (auto &&result : sample) fPropOutput += std::to_string(result) + ", "; //concatenate output to line
     fPropOutput += ">";
@@ -71,7 +71,7 @@ void testUnitCircleSeparation(long long trainingSetSize, long long testSetSize) 
     std::cout << "generating random numbers..." << std::endl;
     unsigned long long numThreads = std::thread::hardware_concurrency();
     unsigned long long perThreadDataRange = (config[0]*trainingSetSize)/numThreads;
-    float sharedDataContainer[config[0]*trainingSetSize]; //data is size of input
+    auto sharedDataContainer = new float[config[0] * trainingSetSize]; //data is size of input
     std::thread dataThreadList[numThreads];
     for (int i = 0; i < numThreads; ++i) {
         //NOTE: THIS IS REALLY TERRIBLE CODE, IT BREAKS WHEN TRAINING SET > 2^18
@@ -83,8 +83,9 @@ void testUnitCircleSeparation(long long trainingSetSize, long long testSetSize) 
         }
     }
 
+    std::cout << "Generating labels..." << std::endl;
     //generate labels
-    float sharedLabelContainer[trainingSetSize]; //size of output (these will always be one dimension for this problem)
+    auto sharedLabelContainer = new float[trainingSetSize]; //size of output (these will always be one dimension for this problem)
     unsigned long long perThreadLabelRange = trainingSetSize / numThreads;
     std::thread labelThreadList[trainingSetSize];
 
@@ -103,26 +104,34 @@ void testUnitCircleSeparation(long long trainingSetSize, long long testSetSize) 
     }
 
     //move the data and labels to STL vectors
+    std::cout << "reallocating into vectors" << std::endl;
     unsigned long vecLength = perThreadDataRange / perThreadLabelRange;
-    auto labels = std::vector<float>(sharedLabelContainer, sharedLabelContainer + trainingSetSize);
+    std::vector<std::vector<float>> labels;
     std::vector<std::vector<float>> data;
-    data.resize((perThreadDataRange * numThreads)/vecLength);
-    for (auto &&datum : data) {
-        datum.reserve(vecLength);
+    labels.resize(static_cast<unsigned long>(trainingSetSize));
+    data.resize(static_cast<unsigned long>(trainingSetSize));
+    for (auto &datum : data) {
+        datum.resize(vecLength);
     }
-    for (int k = 0; k < data.size(); ++k) { //convert 1D array into vector of n-dimensional data
+    for (int k = 0; k < trainingSetSize; ++k) { //convert 1D array into vector of n-dimensional data for input
         for (int i = 0; i < vecLength; ++i) {
             data[k][i] = sharedDataContainer[k+i];
         }
     }
 
+    for (int l = 0; l < labels.capacity(); ++l) { //Yes, the labels are inside a vector of length 1, I know it's dumb
+        labels[l] = {sharedLabelContainer[l]};
+    }
+
+
     //instantiate the network and train via SGD
-    auto *neuralNet = new HelloNet(config);
-    neuralNet->sgd(100, 0.5, data, labels);
+    std::cout << "Instantiating network and passing data" << std::endl;
+    auto neuralNet = new HelloNet(config);
+    neuralNet->gradientDescent(0.5, data, labels);
 
 }
 
 int main(int argc, char **argv) {
-    testConstructorAndForwardProp();
+    //testConstructorAndForwardProp();
     testUnitCircleSeparation(atoll(argv[1]), atoll(argv[2]));
 }

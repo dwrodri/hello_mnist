@@ -23,18 +23,17 @@ private:
     unsigned long num_layers;
 
     //the amount of neurons in each layer in array form
-    unsigned long  *layerData;
+    std::vector<unsigned long>  layerConfig;
 public:
     /*
      * HelloNet takes a list of ints, each int being the count of neurons in each layer
-     * arg_count: amount of layers i.e. amount of ints in array
-     * arg_list: array of ints
      */
-    explicit HelloNet(std::vector<unsigned long> layer_config);
+    explicit HelloNet(std::vector<unsigned long> layerConfig);
 
+    //constructor for debugging
     HelloNet(std::vector<unsigned long> layer_config, float fixed_weight, float fixed_bias);
 
-    //print the weight tables to stdout
+    //print the weight tables to stdout (DEBUG)
     void dumpWeightTables();
 
     //activation function applied to hypothesis h
@@ -44,16 +43,28 @@ public:
     float actPrime(float h);
 
     //classify input data and return result into the same variable passed in
-    void parse(std::vector<float> &data);
+    void forwardProp(std::vector<float> &data);
 
     //perform back propagation algorithm on a single training sample
-    void backProp(std::vector<float> &trainingLabel, std::vector<float> &trainingData, std::vector<std::vector<float>> &nabla_b, std::vector<std::vector<float>> &nabla_w);
+    void backProp(std::vector<float> &trainingLabel,
+                  std::vector<float> &trainingData,
+                  std::vector<std::vector<float>> &nablaB,
+                  std::vector<std::vector<std::vector<float>>> &nablaW);
 
     //get the d/dC by performing a piecewise subtraction between two vectors and gets loaded into output á la C-style
-    void costDerivative(std::vector<float> &expectedValues, std::vector<float> &currentValues, std::vector<float> &output);
+    void costDerivative(std::vector<float> &expectedValues,
+                        std::vector<float> &currentValues,
+                        std::vector<float> &output);
 
     //train the NN using stochastic gradient descent
-    void sgd(int epochs, float learn_rate, std::vector<std::vector<float>> &training_data, std::vector<float> &labels);
+    void sgd(unsigned long epochs,
+             float learnRate,
+             std::vector<std::vector<float>> &trainingData,
+             std::vector<std::vector<float>> &labels);
 
+    //here's an implementation of simple gradient descent
+    void gradientDescent(float learnRate,
+                         std::vector<std::vector<float>> &trainingData,
+                         std::vector<std::vector<float>> &labels);
 
 };
