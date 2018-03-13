@@ -9,6 +9,7 @@ HelloNet::HelloNet(std::vector<unsigned long> layer_config): num_layers(layer_co
     std::random_device rd; //apparently rand() sucks balls, so here's a Mersenne twister
     std::mt19937 mt(rd());
     std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+
     //instantiate weight tables
     weights.resize(num_layers-1); // one table per layer (minus input layer)
     for (int i = 1; i < num_layers; ++i) {
@@ -135,7 +136,7 @@ void HelloNet::costDerivative(std::vector<float> &expectedValues, std::vector<fl
 void HelloNet::backProp(std::vector<float> &trainingLabel,
                         std::vector<float> &trainingData,
                         std::vector<std::vector<float>> &nablaB,
-                        std::vector<std::vector<std::vector<float>>> &nablaW) {
+                        std::vector<std::vector<float>> &nablaW) {
     std::vector<std::vector<float>> hypotheses; //these are the "zs" from Neilsen's code
     std::vector<std::vector<float>> activations; //activation(z)
     std::vector<std::vector<float>> sp;
@@ -166,10 +167,17 @@ void HelloNet::backProp(std::vector<float> &trainingLabel,
     for (int j = 0; j < layerConfig.back(); ++j) { //deltaL = (y[j]-a[j]) * actPrime(z)
         delta_L[j] *= activations.back()[j];
     }
-    nablaB[nablaB.size()-1] = delta_L;
 
-    for (int k = 0; k < nablaW[nablaW.size()-2].size(); ++k) { //
+    nablaB[nablaB.size()-1] = delta_L; //update last layer of biases
+    for (int k = 0; k < nablaW.back().size(); ++k) { //generate layer of weight nablas
+        nablaW.back()[k] = actPrime(activations.back()[k]) * delta_L[k];
+    }
 
+    //generate the rest of the nablas for the network for this example
+    for(unsigned long l = nablaW.size()-2; l > 0; --l) {
+        for (int i = 0; i < nablaW[l].size(); ++i) {
+            //build vector of outputs
+        }
     }
 
 
@@ -182,14 +190,11 @@ void HelloNet::gradientDescent(float learnRate, std::vector<std::vector<float>> 
 
     //allocate arrays for back propagation to do its thing
     std::vector<std::vector<float>> nablaB;
-    std::vector<std::vector<std::vector<float>>> nablaW;
+    std::vector<std::vector<float>> nablaW;
 
     nablaW.resize(num_layers-1); // one table per layer (minus input layer)
     for (int i = 1; i < num_layers; ++i) {
         nablaW[i-1].resize(layerConfig[i]); // one row per neuron in current layer
-        for (int j = 0; j < layerConfig[i]; ++j) {
-            nablaW[i-1][j].resize(layerConfig[i-1]); // one entry in the row per input connection
-        }
     }
 
     nablaB.resize(num_layers-1);
