@@ -49,7 +49,7 @@ public:
     void backProp(std::vector<float> &trainingLabel,
                   std::vector<float> &trainingData,
                   std::vector<std::vector<float>> &nablaB,
-                  std::vector<std::vector<float>> &nablaW);
+                  std::vector<std::vector<std::vector<float>>> &nablaW);
 
     //get the d/dC by performing a piecewise subtraction between two vectors and gets loaded into output á la C-style
     void costDerivative(std::vector<float> &expectedValues,

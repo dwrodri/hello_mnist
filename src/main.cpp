@@ -13,7 +13,7 @@ void threadDataCallBack(float* const & arr,
                         unsigned long long const & dataRange){
     std::random_device rd;
     std::mt19937 mt(rd()); //Mersenne twister could be swapped with XOR128+ algorithm
-    std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+    std::uniform_real_distribution<float> dist(-1.6f, 1.6f);
 
     auto localPointer = const_cast<float* &>(arr);
     for (unsigned long long i = 0; i < dataRange; ++i) {
@@ -65,7 +65,7 @@ void testConstructorAndForwardProp(){
 //TODO: Fix this code to work for data sets larger than 2^17
 void testUnitCircleSeparation(long long trainingSetSize, long long testSetSize) { //separate unit vectors from non-unit vectors
     //instantiate simple network
-    std::vector<unsigned long> config = {2, 2, 1}; //hard-coded configuration for then network
+    std::vector<unsigned long> config = {4, 3, 2, 1}; //hard-coded configuration for then network
 
     //generate random numbers in parallel
     std::cout << "generating random numbers..." << std::endl;
@@ -97,6 +97,7 @@ void testUnitCircleSeparation(long long trainingSetSize, long long testSetSize) 
                                    perThreadDataRange,
                                    perThreadLabelRange);
     }
+
     for (auto &thread : labelThreadList) {
         if(thread.joinable()){
             thread.join();
@@ -108,6 +109,7 @@ void testUnitCircleSeparation(long long trainingSetSize, long long testSetSize) 
     unsigned long vecLength = perThreadDataRange / perThreadLabelRange;
     std::vector<std::vector<float>> labels;
     std::vector<std::vector<float>> data;
+    float percentOfSmallVectors = 0.0;
     labels.resize(static_cast<unsigned long>(trainingSetSize));
     data.resize(static_cast<unsigned long>(trainingSetSize));
     for (auto &datum : data) {
@@ -123,15 +125,25 @@ void testUnitCircleSeparation(long long trainingSetSize, long long testSetSize) 
         labels[l] = {sharedLabelContainer[l]};
     }
 
+    for (auto &&label : labels) {
+        if (label[0] == 0) percentOfSmallVectors++;
+    }
+
+    percentOfSmallVectors /= labels.size();
+
+    std::cout << (percentOfSmallVectors*100) << "% of vectors in this set are smaller than a unit vectors" << std::endl;
+
 
     //instantiate the network and train via SGD
     std::cout << "Instantiating network and passing data" << std::endl;
     auto neuralNet = new HelloNet(config);
+    neuralNet->dumpWeightTables(); // for debugging purposes
     neuralNet->gradientDescent(0.5, data, labels);
+    //TODO: write parsing function for testing set
 
 }
 
 int main(int argc, char **argv) {
-    //testConstructorAndForwardProp();
+    testConstructorAndForwardProp();
     testUnitCircleSeparation(atoll(argv[1]), atoll(argv[2]));
 }

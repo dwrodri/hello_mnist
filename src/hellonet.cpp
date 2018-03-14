@@ -136,7 +136,7 @@ void HelloNet::costDerivative(std::vector<float> &expectedValues, std::vector<fl
 void HelloNet::backProp(std::vector<float> &trainingLabel,
                         std::vector<float> &trainingData,
                         std::vector<std::vector<float>> &nablaB,
-                        std::vector<std::vector<float>> &nablaW) {
+                        std::vector<std::vector<std::vector<float>>> &nablaW) {
     std::vector<std::vector<float>> hypotheses; //these are the "zs" from Neilsen's code
     std::vector<std::vector<float>> activations; //activation(z)
     std::vector<std::vector<float>> sp;
@@ -170,14 +170,36 @@ void HelloNet::backProp(std::vector<float> &trainingLabel,
 
     nablaB[nablaB.size()-1] = delta_L; //update last layer of biases
     for (int k = 0; k < nablaW.back().size(); ++k) { //generate layer of weight nablas
-        nablaW.back()[k] = actPrime(activations.back()[k]) * delta_L[k];
+        for (int i = 0; i < nablaW.back()[k].size(); ++i) {
+            nablaW.back()[k][i] = activations[activations.size()-1][i]*delta_L[k];
+        }
     }
 
     //generate the rest of the nablas for the network for this example
-    for(unsigned long l = nablaW.size()-2; l > 0; --l) {
-        for (int i = 0; i < nablaW[l].size(); ++i) {
-            //build vector of outputs
+    for(unsigned long l = nablaW.size()-2; l > 1; --l) { //for each layer, moving backwards
+        //build transpose of weight table
+        std::vector<std::vector<float>> transposedWeightTable;
+        //pre-allocate memory for transpose
+        transposedWeightTable.resize(weights[l+1][0].size());
+        for (int i = 0; i < weights[l+1][0].size(); ++i) {
+            transposedWeightTable[i].resize(weights[l+1].size());
         }
+
+        for (int j = 0; j < weights[l + 1].size(); ++j) {
+            for (int i = 0; i < weights[l + 1][j].size(); ++i) {
+                transposedWeightTable[i][j] = weights[l+1][j][i]; //load in crisscrossed for transpose
+            }
+        }
+
+        for (int k = 0; k < transposedWeightTable.size(); ++k) { //
+            nablaB[l][k] = std::inner_product(transposedWeightTable[k].begin(), transposedWeightTable[k].end(), delta_L.begin(), 0.0f);
+            nablaB[l][k] *= actPrime(hypotheses[l][k]); //this is where you compute the layer delta vector
+            for (int i = 0; i < nablaW[l][k].size(); ++i) {
+                nablaW[l][k][i] = activations[l-1][i]*nablaB[l][k];
+            }
+        }
+        delta_L = nablaB[l];
+
     }
 
 
@@ -190,11 +212,14 @@ void HelloNet::gradientDescent(float learnRate, std::vector<std::vector<float>> 
 
     //allocate arrays for back propagation to do its thing
     std::vector<std::vector<float>> nablaB;
-    std::vector<std::vector<float>> nablaW;
+    std::vector<std::vector<std::vector<float>>> nablaW;
 
     nablaW.resize(num_layers-1); // one table per layer (minus input layer)
     for (int i = 1; i < num_layers; ++i) {
         nablaW[i-1].resize(layerConfig[i]); // one row per neuron in current layer
+        for (int j = 0; j < layerConfig[i]; ++j) {
+            nablaW[i-1][j].resize(layerConfig[i-1]); // one entry in the row per input connection
+        }
     }
 
     nablaB.resize(num_layers-1);
@@ -205,6 +230,35 @@ void HelloNet::gradientDescent(float learnRate, std::vector<std::vector<float>> 
     for (int i = 0; i < labels.size(); ++i) {
         backProp(trainingData[i], labels[i], nablaB, nablaW);
     }
+
+    //scale updates learn rate
+    for (auto &&layer : nablaB) {
+        for (auto &&neuronBiasNabla : layer) {
+            neuronBiasNabla *= learnRate;
+        }
+    }
+    for (auto &&layer : nablaW) {
+        for (auto &&neuron : layer) {
+            for (auto &&neuronWeightNabla : neuron) {
+                neuronWeightNabla *= learnRate;
+            }
+        }
+    }
+
+    //apply updates to neural net
+    for (int k = 0; k < num_layers; ++k) {
+        for (int i = 0; i < layerConfig[k]; ++i) {
+            biases[k][i] += nablaB[k][i];
+            if(k!=0) {
+                for (int j = 0; j < weights[k][i].size(); ++j) {
+                    weights[k - 1][i][j] += nablaW[k - 1][i][j]; //adjust for lack of input layer in weight tables
+
+                }
+            }
+        }
+    }
+
+
 }
 
 //TODO: make this multi-threaded
@@ -219,7 +273,6 @@ void HelloNet::sgd(unsigned long epochs,
         auto labelBatch = std::vector<std::vector<float>>(labels.begin() + i, labels.end() + (i + batchSize));
 
     }
-    //parse each batch
 
 }
 
