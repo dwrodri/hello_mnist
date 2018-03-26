@@ -63,7 +63,7 @@ public:
              std::vector<std::vector<float>> &labels);
 
     //here's an implementation of simple gradient descent
-    void gradientDescent(float learnRate,
+    void gradientDescend(float learnRate,
                          std::vector<std::vector<float>> &trainingData,
                          std::vector<std::vector<float>> &labels);
 

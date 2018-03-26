@@ -134,11 +134,11 @@ void testUnitCircleSeparation(long long trainingSetSize, long long testSetSize) 
     std::cout << (percentOfSmallVectors*100) << "% of vectors in this set are smaller than a unit vectors" << std::endl;
 
 
-    //instantiate the network and train via SGD
+    //instantiate the network and train via gradient descent
     std::cout << "Instantiating network and passing data" << std::endl;
     auto neuralNet = new HelloNet(config);
     neuralNet->dumpWeightTables(); // for debugging purposes
-    neuralNet->gradientDescent(0.5, data, labels);
+    neuralNet->gradientDescend(0.5, data, labels);
     //TODO: write parsing function for testing set
 
 }

@@ -207,7 +207,7 @@ void HelloNet::backProp(std::vector<float> &trainingLabel,
 
 }
 
-void HelloNet::gradientDescent(float learnRate, std::vector<std::vector<float>> &trainingData,
+void HelloNet::gradientDescend(float learnRate, std::vector<std::vector<float>> &trainingData,
                                std::vector<std::vector<float>> &labels) {
 
     //allocate arrays for back propagation to do its thing
@@ -246,14 +246,11 @@ void HelloNet::gradientDescent(float learnRate, std::vector<std::vector<float>> 
     }
 
     //apply updates to neural net
-    for (int k = 0; k < num_layers; ++k) {
+    for (int k = 1; k < num_layers-1; ++k) {
         for (int i = 0; i < layerConfig[k]; ++i) {
-            biases[k][i] += nablaB[k][i];
-            if(k!=0) {
-                for (int j = 0; j < weights[k][i].size(); ++j) {
-                    weights[k - 1][i][j] += nablaW[k - 1][i][j]; //adjust for lack of input layer in weight tables
-
-                }
+            biases[k-1][i] += nablaB[k-1][i];
+            for (int j = 0; j < weights[k-1][i].size(); ++j) {
+                weights[k-1][i][j] += nablaW[k-1][i][j]; //adjust for lack of input layer in weight tables
             }
         }
     }
