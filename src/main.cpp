@@ -8,14 +8,14 @@
  */
 
 
-//thread-specific function that loads random floats into array
-void threadDataCallBack(float* const & arr,
+//thread-specific function that loads random long doubles into array
+void threadDataCallBack(long double* const & arr,
                         unsigned long long const & dataRange){
     std::random_device rd;
     std::mt19937 mt(rd()); //Mersenne twister could be swapped with XOR128+ algorithm
-    std::uniform_real_distribution<float> dist(-1.6f, 1.6f);
+    std::uniform_real_distribution<long double> dist(-1.6f, 1.6f);
 
-    auto localPointer = const_cast<float* &>(arr);
+    auto localPointer = const_cast<long double* &>(arr);
     for (unsigned long long i = 0; i < dataRange; ++i) {
         localPointer[i] = dist(mt);
     }
@@ -23,18 +23,18 @@ void threadDataCallBack(float* const & arr,
 }
 
 //thread-specific function takes linear array of components and creates labels for unit vs. non-unit
-void threadLabelCallBack(float* const & dataArr,
-                         float* const & labelArr,
+void threadLabelCallBack(long double* const & dataArr,
+                         long double* const & labelArr,
                          unsigned long long const & dataRange,
                          unsigned long long const & labelRange){
     unsigned long vecLength = dataRange / labelRange; //calc length of vector
 
-    auto localPointer = const_cast<float* &>(labelArr); // no need for other casts because this is the only one changed
+    auto localPointer = const_cast<long double* &>(labelArr); // no need for other casts because this is the only one changed
 
     //there's got to be a more efficient way but I can't think of a better dynamic solution
     int labelIndex = 0;
     for (int i = 0; i < dataRange; i+=vecLength) {
-        float sqSum = 0;
+        long double sqSum = 0;
         for (int j = 0; j < vecLength; ++j) {
             sqSum += dataArr[i+j] * dataArr[i+j];
         }
@@ -53,7 +53,7 @@ void testConstructorAndForwardProp(){
 
     //forward propagation test
     std::cout << "propagating through = < 1, 1, 1, 1, 1 >" << std::endl;
-    std::vector<float> sample = {1, 1, 1, 1, 1}; //dummy data
+    std::vector<long double> sample = {1, 1, 1, 1, 1}; //dummy data
     test->forwardProp(sample);
     std::string fPropOutput = "<";
     for (auto &&result : sample) fPropOutput += std::to_string(result) + ", "; //concatenate output to line
@@ -65,13 +65,13 @@ void testConstructorAndForwardProp(){
 //TODO: Fix this code to work for data sets larger than 2^17
 void testUnitCircleSeparation(long long trainingSetSize, long long testSetSize) { //separate unit vectors from non-unit vectors
     //instantiate simple network
-    std::vector<unsigned long> config = {4, 3, 2, 1}; //hard-coded configuration for then network
+    std::vector<unsigned long> config = {2, 2, 1}; //hard-coded configuration for then network
 
     //generate random numbers in parallel
     std::cout << "generating random numbers..." << std::endl;
     unsigned long long numThreads = std::thread::hardware_concurrency();
     unsigned long long perThreadDataRange = (config[0]*trainingSetSize)/numThreads;
-    auto sharedDataContainer = new float[config[0] * trainingSetSize]; //data is size of input
+    auto sharedDataContainer = new long double[config[0] * trainingSetSize]; //data is size of input
     std::thread dataThreadList[numThreads];
     for (int i = 0; i < numThreads; ++i) {
         //NOTE: THIS IS REALLY TERRIBLE CODE, IT BREAKS WHEN TRAINING SET > 2^18
@@ -85,11 +85,10 @@ void testUnitCircleSeparation(long long trainingSetSize, long long testSetSize) 
 
     std::cout << "Generating labels..." << std::endl;
     //generate labels
-    auto sharedLabelContainer = new float[trainingSetSize]; //size of output (these will always be one dimension for this problem)
+    auto sharedLabelContainer = new long double[trainingSetSize]; //size of output (these will always be one dimension for this problem)
     unsigned long long perThreadLabelRange = trainingSetSize / numThreads;
-    std::thread labelThreadList[trainingSetSize];
+    std::thread labelThreadList[numThreads];
 
-    //NOTE: THIS GARBAGE BREAKS AT 2^17
     for (int j = 0; j < numThreads; ++j) {
        labelThreadList[j] = std::thread(threadLabelCallBack,
                                    (sharedDataContainer + j * perThreadDataRange),
@@ -107,9 +106,9 @@ void testUnitCircleSeparation(long long trainingSetSize, long long testSetSize) 
     //move the data and labels to STL vectors
     std::cout << "reallocating into vectors" << std::endl;
     unsigned long vecLength = perThreadDataRange / perThreadLabelRange;
-    std::vector<std::vector<float>> labels;
-    std::vector<std::vector<float>> data;
-    float percentOfSmallVectors = 0.0;
+    std::vector<std::vector<long double>> labels;
+    std::vector<std::vector<long double>> data;
+    long double percentOfSmallVectors = 0.0;
     labels.resize(static_cast<unsigned long>(trainingSetSize));
     data.resize(static_cast<unsigned long>(trainingSetSize));
     for (auto &datum : data) {
