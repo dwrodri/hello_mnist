@@ -1,8 +1,6 @@
 /*
- * Created by Derek Rodriguez on 2/14/18.
  * This is the class designed to parse the MNIST dataset. In the perfect world, all you'll have to do is write a parser
  * for your dataset, and this NN will be able to train on it. However, that might take a while.
- * Edited by: Gordon Zhang
  */
 
 #ifndef HELLO_MNIST_MNIST_PARSER_H
@@ -15,7 +13,7 @@
 
 class MNISTDataset {
 public:
-    MNISTDataset(string image_path, string label_path);
+    MNISTDataset(std::string image_path, std::string label_path);
     int rows;
     int cols;
     int num_images;

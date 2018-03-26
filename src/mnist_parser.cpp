@@ -1,7 +1,3 @@
-/*
- * Created by Derek Rodriguez on 2/14/18.
- * Last edited by: Gordon Zhang
- */
 
 #include "mnist_parser.h"
 
@@ -79,10 +75,3 @@ MNISTDataset::MNISTDataset(std::string image_path, std::string label_path) : ima
         std::cout << "Error opening label file" << std::endl;
     }
 }
-/*
-int main()
-{
-    MNISTDataset data("t10k-images.idx3-ubyte", "t10k-labels.idx1-ubyte");
-    return 0;
-}
-*/
