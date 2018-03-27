@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <random>
 #include <vector>
+#include <algorithm>
 #include <iostream>
 
 class HelloNet{
