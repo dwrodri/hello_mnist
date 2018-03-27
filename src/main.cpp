@@ -69,7 +69,7 @@ void testUnitCircleSeparation(long long trainingSetSize, long long testSetSize) 
 
     //generate random numbers in parallel
     std::cout << "generating random numbers..." << std::endl;
-    unsigned long long numThreads = std::thread::hardware_concurrency();
+    unsigned long numThreads = std::thread::hardware_concurrency();
     unsigned long long perThreadDataRange = (config[0]*trainingSetSize)/numThreads;
     auto sharedDataContainer = new long double[config[0] * trainingSetSize]; //data is size of input
     std::thread dataThreadList[numThreads];
