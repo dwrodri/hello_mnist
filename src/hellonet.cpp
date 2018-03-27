@@ -129,7 +129,7 @@ void HelloNet::forwardProp(std::vector<long double> &data) { //forward prop exam
 void HelloNet::costDerivative(std::vector<long double> &expectedValues, std::vector<long double> &currentValues, std::vector<long double> &output) {
     std::transform(currentValues.begin(), currentValues.end(),
                    expectedValues.begin(),
-                   std::back_inserter(output), std::minus<>());
+                   std::back_inserter(output), std::minus<long double>());
 }
 
 //this function is drenched in comments because it's so messy

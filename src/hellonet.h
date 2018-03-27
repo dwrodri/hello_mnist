@@ -10,6 +10,7 @@
 #include <random>
 #include <vector>
 #include <algorithm>
+#include <thread>
 #include <iostream>
 
 class HelloNet{
