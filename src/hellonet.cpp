@@ -207,8 +207,8 @@ void HelloNet::backProp(std::vector<long double> &trainingLabel,
 
 }
 
-void HelloNet::gradientDescend(long double learnRate, std::vector<std::vector<long double>> &trainingData,
-                               std::vector<std::vector<long double>> &labels) {
+void HelloNet::gradientDescend(long double learnRate, std::vector<std::vector<long double> > &trainingData,
+                               std::vector<std::vector<long double> > &labels) {
 
     //allocate arrays for back propagation to do its thing
     std::vector<std::vector<long double>> nablaB;
@@ -261,13 +261,13 @@ void HelloNet::gradientDescend(long double learnRate, std::vector<std::vector<lo
 //TODO: make this multi-threaded
 void HelloNet::sgd(unsigned long epochs,
                    long double learnRate,
-                   std::vector<std::vector<long double>> &trainingData,
-                   std::vector<std::vector<long double>> &labels) {
+                   std::vector<std::vector<long double> > &trainingData,
+                   std::vector<std::vector<long double> > &labels) {
 
     unsigned long batchSize = trainingData.size()/epochs; //size of batch
     for (unsigned long i = 0; i < (trainingData.size() - batchSize); i+= batchSize) {
-        auto trainingBatch = std::vector<std::vector<long double>>(trainingData.begin()+i, trainingData.end() + (i + batchSize));
-        auto labelBatch = std::vector<std::vector<long double>>(labels.begin() + i, labels.end() + (i + batchSize));
+        auto trainingBatch = std::vector<std::vector<long double> >(trainingData.begin()+i, trainingData.end() + (i + batchSize));
+        auto labelBatch = std::vector<std::vector<long double> >(labels.begin() + i, labels.end() + (i + batchSize));
 
     }
 
